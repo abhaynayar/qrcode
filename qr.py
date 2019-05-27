@@ -301,45 +301,87 @@ out += '0' * modulo			 	# to make a multiple of 8
 out += '1110110000010001' * int((total_bits - len(out))/16)
 out += '11101100' * int((total_bits - len(out))/8)
 
+# convert binary codewords to decimal coefficients for message polynomial's coefficients
 
-''' Error Correction '''
-
-
-# for now it will be hard-coded :)
-# ec blocks for 1-M => 10
-
-ec_alpha = [0,251,67,46,61,118,70,64,94,32,45]
-ec_x = range(10,-1,-1)
-
-# convert binary codewords to decimal coefficients for message
 coeffs = []
 for i in range(0,128,8):
 	coeffs.append((int(out[i:i+8],2)))
-	
-print(coeffs)
 
-# multiply generator by the lead term of message
-expnts = range(total_cwd[look_up]-1+ec_x[0], -1+ec_x[0], -1)
-	
-# the lead term of the generator polynomial should also have the same exponent, so multiply the entire polynomial by x15
 
-P=expnts[0]-ec_x[0]
-ec_x = [x + (P) for x in ec_x]
-
-# multiply generator polynomial by the lead term of the message polynomial
-
-# according to log-antilog table 32 = α5
-ec_alpha = [(x + (5))%255 for x in ec_alpha]
+''' ERROR CORRECTION '''
 
 log_table = [1,2,4,8,16,32,64,128,29,58,116,232,205,135,19,38,76,152,45,90,180,117,234,201,143,3,6,12,24,48,96,192,157,39,78,156,37,74,148,53,106,212,181,119,238,193,159,35,70,140,5,10,20,40,80,160,93,186,105,210,185,111,222,161,95,190,97,194,153,47,94,188,101,202,137,15,30,60,120,240,253,231,211,187,107,214,177,127,254,225,223,163,91,182,113,226,217,175,67,134,17,34,68,136,13,26,52,104,208,189,103,206,129,31,62,124,248,237,199,147,59,118,236,197,151,51,102,204,133,23,46,92,184,109,218,169,79,158,33,66,132,21,42,84,168,77,154,41,82,164,85,170,73,146,57,114,228,213,183,115,230,209,191,99,198,145,63,126,252,229,215,179,123,246,241,255,227,219,171,75,150,49,98,196,149,55,110,220,165,87,174,65,130,25,50,100,200,141,7,14,28,56,112,224,221,167,83,166,81,162,89,178,121,242,249,239,195,155,43,86,172,69,138,9,18,36,72,144,61,122,244,245,247,243,251,235,203,139,11,22,44,88,176,125,250,233,207,131,27,54,108,216,173,71,142,1]
 
-# convert alpha to decimal
-ec_alpha = [log_table[x] for x in ec_alpha]
 
-# xor with message polynomial coeffs
-coeffs = [coeffs[x] ^ ec_alpha[x] for x in range(11)]
-print (coeffs)
 
+# for now it will be hard-coded :)
+# ec_blocks for 1-M => 10
+ec_x = range(10,-1,-1) # 10..0
+ec_l = [0,251,67,46,61,118,70,64,94,32,45] # this is the generator polynomial
+
+
+# multiply generator by the lead exponent of message
+# ec_x[0]-1 = 9
+expnts = range(total_cwd[look_up]+ec_x[0]-1, ec_x[0]-1, -1)
+
+# the lead term of the generator polynomial should also have the same exponent as the message polynomial
+ec_x = [x + (expnts[0]-ec_x[0]) for x in ec_x]
+
+
+
+
+''' STEP 1A '''
+
+# multiply the generator polynomial by the lead term of the message polynomial (coeffs[0])
+
+ec_alpha = [(x + (log_table.index(coeffs[0])))%255 for x in ec_l]
+
+# convert alpha to decimal.:-
+
+# RESULT FROM 1A
+ec_decimal = [log_table[x] for x in ec_alpha]
+
+
+''' STEP 1B '''
+
+xor = []
+for i in range(11):
+	xor.append(coeffs[i] ^ ec_decimal[i])
+
+# remaining xors that are zero
+for i in range(11,16):
+	xor.append(coeffs[i])
+
+# RESULT FROM 1B
+xor.pop(0)
+
+'''
+i don't understand this part right now
+is the message polynomial updated to the
+result of the xor, or is the xor indepd.?
+'''
+expnts = [x - 1 for x in expnts]
+
+''' STEP 2A '''
+
+ec_alpha = [(x + (log_table.index(xor[0])))%255 for x in ec_l]
+ec_decimal = [log_table[x] for x in ec_alpha]
+
+# same as above
+ec_x = [x - 1 for x in ec_x]
+
+
+''' STEP 2B '''
+
+xor2 = []
+for i in range(len(ec_decimal)):
+	xor2.append(xor[i] ^ ec_decimal[i])
+
+# remaining xors that are zero
+for i in range(len(ec_decimal),len(xor)):
+	xor2.append(xor[i])
+
+xor2.pop(0)
 
 
 ''' DRAW IMAGE '''
@@ -430,4 +472,4 @@ for i in range(len(apr[v])):
 img[[(4 * v) + 9], 8] = bl
 
 plt.imshow(img)
-plt.show()
+#plt.show()
