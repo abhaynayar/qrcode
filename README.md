@@ -1,6 +1,8 @@
 # qrcode-gen
 A simple Python-based QR code generator
 
+### files
+
 _qr.py_ contains the main processing logic
 
 _tables.py_ contains hardcoded tables from the QR specification
