@@ -7,5 +7,5 @@ _qr.py_ contains the main processing logic
 
 _tables.py_ contains hardcoded tables from the QR specification
 
-_draw.py_ helps drawing the qr code using matplotlib and numpy
+_draw.py_ helps draw the qr code using matplotlib and numpy
 
