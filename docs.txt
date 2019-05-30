@@ -1,0 +1,16 @@
+'''
+Glossary
+
+ccp_X	character capacities array (X => ecl)
+mode	mode of data {N,A,B,K}
+inp		input text by the user to be converted
+ecl		error correction level {L,M,Q,H}
+v		version
+n		dimension
+out		output data
+img		final image
+cci		character count indicator => determines in padded binary how many characters in input
+'''
+
+
+# https://www.thonky.com/qr-code-tutorial/

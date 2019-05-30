@@ -1,26 +1,32 @@
-from matplotlib import pyplot as plt
+import tables
+import draw
 
 
-from tables import *
-from draw import *
+''' Initializing data '''
+
+# for now input is fixed
+mode = 'A'
+inp = 'HELLO WORLD'
+ecl = 'M'
 
 
-'''
-Glossary
+''' Determining smallest version '''
 
-ccp_X	character capacities array (X => ecl)
-mode	mode of data {N,A,B,K}
-inp		input text by the user to be converted
-ecl		error correction level {L,M,Q,H}
-v		version
-n		dimension
-out		output data
-img		final image
-cci		character count indicator => determines in padded binary how many characters in input
-'''
+v = 1
+
+if(mode == 'A'):
+	if(ecl == 'L'):
+		size = len(inp) # max is 4296 (40L)
+		for i in range(40):
+			if(size < ccp_a[0][i]):
+				v=i+1
+				break
 
 
-# https://www.thonky.com/qr-code-tutorial/
+
+n = (((v-1)*4)+21)
+
+out = ''
 
 
 ''' Add Mode Indicator '''
@@ -40,17 +46,17 @@ out += ("{0:b}".format(len(inp))).zfill(ccpad)
 ''' Encode Data '''
 
 for x in range(1,len(inp),2):
-	sum = alpha_dict[inp[x-1]] * 45 + alpha_dict[inp[x]]
+	sum = tables.alpha_dict[inp[x-1]] * 45 + tables.alpha_dict[inp[x]]
 	out += ("{0:b}".format(sum)).zfill(11)
 
 if(len(inp)%2 == 1): # if it's odd
-	out += ("{0:b}".format(alpha_dict[inp[-1]])).zfill(6)
+	out += ("{0:b}".format(tables.alpha_dict[inp[-1]])).zfill(6)
 
 
 ''' Codewords & Padding '''
 
 look_up = str(v) + '-' + str(ecl)
-total_bits = total_cwd[look_up] * 8
+total_bits = tables.total_cwd[look_up] * 8
 difference = total_bits - len(out)
 
 if(difference > 3):
@@ -80,18 +86,18 @@ ec_x = range(10,-1,-1) # 10..0
 
 # multiply generator by the lead exponent of message
 # ec_x[0]-1 = 9
-expnts = range(total_cwd[look_up]+ec_x[0]-1, ec_x[0]-1, -1)
+expnts = range(tables.total_cwd[look_up]+ec_x[0]-1, ec_x[0]-1, -1)
 
 
 # the lead term of the generator polynomial should also have the same exponent as the message polynomial
 ec_x = [x + (expnts[0]-ec_x[0]) for x in ec_x]
 
 
-''' THE DIVISION PROCESS '''
+''' THE DIVISION PROCESS for ERROR CORRECTION '''
 
 for j in range(len(expnts)):
-	ec_alpha = [(x + (log_table.index(coeffs[0])))%255 for x in ec_l]
-	ec_decimal = [log_table[x] for x in ec_alpha]
+	ec_alpha = [(x + (tables.log_table.index(coeffs[0])))%255 for x in tables.ec_l]
+	ec_decimal = [tables.log_table[x] for x in ec_alpha]
 	
 	xor = []
 	
@@ -113,6 +119,11 @@ for j in range(len(expnts)):
 	coeffs = xor
 
 
-print(coeffs)
-plt.imshow(img)
-plt.show()
+out = ''
+for x in coeffs:
+	out += "{0:b}".format(x)
+
+draw.draw_qr(v,n,out)
+
+
+
