@@ -25,16 +25,17 @@ if(mode == 'A'):
 
 
 n = (((v-1)*4)+21)
-
 out = ''
 
 
 ''' Add Mode Indicator '''
+
 if(mode == 'A'):
 	out += '0010'
 
 
 ''' Add Character Count Indicator '''
+
 ccpad = 0
 if(1<=v<=9): # and so on
 	if(mode == 'A'): # and so on

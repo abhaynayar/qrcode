@@ -1,13 +1,14 @@
 import numpy as np
 from matplotlib import pyplot as plt
 
-
 # different colours as shortcuts
+
 wt = [255,255,255]
 bl = [0,0,0]
 gr = [128, 128, 128]
-fi = [0,0,255]
-vi = [0,255,255]
+
+fi = [0,0,255] # format information
+vi = [0,255,255] # version information
 
 
 def draw_qr(v,n,out):
@@ -21,14 +22,14 @@ def draw_qr(v,n,out):
 	for i in range(8):
 		img[i,8] = img[8,i] = img[8,8] = fi  # top-left
 		img[8,n-i-1] = fi  # top-right
-		img[n-i-1,8] = fi  # top-right
+		img[n-i-1,8] = fi  # bottom-left
 
 
 	''' Version Information Area reservation '''
 	img[n-11:n-8,0:6] = vi
 	img[0:6,n-11:n-8] = vi
 
-		
+	
 	''' Timing Patterns '''
 	# always start and end with a dark module
 
@@ -95,15 +96,17 @@ def draw_qr(v,n,out):
 	y=n-1
 	
 	print(out)
+	
+	column_height = ((n-1)-8)*2
 
-	for i in range(len(out)):
+	for i in range(column_height):
 	
 		if img[y,x].tolist() == gr:
 			if out[i] == '1':
 				img[y,x] = bl
 			else:
 				img[y,x] = wt
-		
+	
 		if i%4 == 0:
 			x = x-1
 		elif (i-1)%4 == 0:
@@ -111,16 +114,60 @@ def draw_qr(v,n,out):
 			y = y-1
 		elif (i-2)%4 == 0:
 			x = x-1
-		else:
+		elif (i-3)%4 == 0:
 			x = x+1
 			y = y-1
 
+	x = x-2
+	y = y+1
 	
+	for i in range(column_height, column_height*2):
+		if img[y,x].tolist() == gr:
+			if out[i] == '1':
+				img[y,x] = bl
+				print(x,y)
+			else:
+				img[y,x] = wt
+				
+		if i%4 == 0:
+			x = x-1
+		elif (i-1)%4 == 0:
+			x = x+1
+			y = y+1
+		elif (i-2)%4 == 0:
+			x = x-1
+		elif (i-3)%4 == 0:
+			x = x+1
+			y = y+1
+			
+	x = x-2
+	y = y-1
+	
+	for i in range(column_height*2,column_height*3-1):
+	
+		if img[y,x].tolist() == gr:
+			if out[i] == '1':
+				img[y,x] = bl
+			else:
+				img[y,x] = wt
+	
+		if i%4 == 0:
+			x = x-1
+		elif (i-1)%4 == 0:
+			x = x+1
+			y = y-1
+		elif (i-2)%4 == 0:
+			x = x-1
+		elif (i-3)%4 == 0:
+			x = x+1
+			y = y-1
 	
 	''' Show the image '''
 
 	plt.imshow(img)
 	plt.show()
-
-
-
+'''
+110001001000111001111110
+111111010111101011111100
+11111100010101110110111
+'''

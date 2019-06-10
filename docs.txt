@@ -13,4 +13,4 @@ cci		character count indicator => determines in padded binary how many character
 '''
 
 
-# https://www.thonky.com/qr-code-tutorial/
+https://www.thonky.com/qr-code-tutorial/
