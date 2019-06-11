@@ -1,14 +1,12 @@
 import tables
 import draw
 
-
 ''' Initializing data '''
 
-# for now input is fixed
+# for now, input is fixed
 mode = 'A'
-inp = 'HELLO WORLD'
-ecl = 'M'
-
+inp = 'ABHAY NAAYAR'
+ecl = 'L'
 
 ''' Determining smallest version '''
 
@@ -18,7 +16,7 @@ if(mode == 'A'):
 	if(ecl == 'L'):
 		size = len(inp) # max is 4296 (40L)
 		for i in range(40):
-			if(size < ccp_a[0][i]):
+			if(size < tables.ccp_a[0][i]):
 				v=i+1
 				break
 
@@ -27,12 +25,10 @@ if(mode == 'A'):
 n = (((v-1)*4)+21)
 out = ''
 
-
 ''' Add Mode Indicator '''
 
 if(mode == 'A'):
 	out += '0010'
-
 
 ''' Add Character Count Indicator '''
 
@@ -43,7 +39,6 @@ if(1<=v<=9): # and so on
 
 out += ("{0:b}".format(len(inp))).zfill(ccpad)
 
-
 ''' Encode Data '''
 
 for x in range(1,len(inp),2):
@@ -52,7 +47,6 @@ for x in range(1,len(inp),2):
 
 if(len(inp)%2 == 1): # if it's odd
 	out += ("{0:b}".format(tables.alpha_dict[inp[-1]])).zfill(6)
-
 
 ''' Codewords & Padding '''
 
@@ -77,7 +71,6 @@ coeffs = []
 for i in range(0,128,8):
 	coeffs.append((int(out[i:i+8],2)))
 
-
 ''' ERROR CORRECTION '''
 
 # for now it will be hard-coded :)
@@ -92,7 +85,6 @@ expnts = range(tables.total_cwd[look_up]+ec_x[0]-1, ec_x[0]-1, -1)
 
 # the lead term of the generator polynomial should also have the same exponent as the message polynomial
 ec_x = [x + (expnts[0]-ec_x[0]) for x in ec_x]
-
 
 ''' THE DIVISION PROCESS for ERROR CORRECTION '''
 
@@ -119,12 +111,44 @@ for j in range(len(expnts)):
 	xor.pop(0)
 	coeffs = xor
 
+print(coeffs)
 
 out = ''
 for x in coeffs:
 	out += "{0:b}".format(x)
 
+
+
+''' Version and format info '''
+
+# CAN BE DONE USING FORMAT STRING TABLE !!!
+# https://www.thonky.com/qr-code-tutorial/format-version-tables
+
+fmt_ecl = "{0:b}".format(tables.ecl_bin[ecl]).zfill(2)
+fmt_mask = '100'  # hard-coded for now :)
+fmt_str = fmt_ecl + fmt_mask
+fmt_str2 = fmt_str
+
+fmt_gen = '10100110111'
+fmt_str += '0'*10
+fmt_str = fmt_str.lstrip('0')
+
+
+while len(fmt_str) >= 11:
+	fmt_gen2 = fmt_gen + '0'*(len(fmt_str)-len(fmt_gen))
+	xor = int(fmt_str,2) ^ int(fmt_gen2,2)
+	fmt_str = '{0:b}'.format(xor)
+	fmt_str = fmt_str.lstrip('0')
+
+fmt_str.zfill(10)
+fmt_str2 += fmt_str
+
+xor = int(fmt_str2,2) ^ int('101010000010010',2)
+fmt_str2 = '{0:b}'.format(xor)
+print(fmt_str2)	
+
+
+
+
+
 draw.draw_qr(v,n,out)
-
-
-

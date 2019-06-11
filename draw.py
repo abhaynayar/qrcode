@@ -7,29 +7,25 @@ wt = [255,255,255]
 bl = [0,0,0]
 gr = [128, 128, 128]
 
-fi = [0,0,255] # format information
-vi = [0,255,255] # version information
-
+fi = [0,0,255]     # format information
+vi = [0,255,255]   # version information
 
 def draw_qr(v,n,out):
 
-	# initializing image framework
 	img = np.zeros((n,n,3), np.uint8)
-	img[:,:] = (128,128,128)
-
-
+	img[:,:] = gr
+	
 	''' Format Information Area reservation '''
 	for i in range(8):
 		img[i,8] = img[8,i] = img[8,8] = fi  # top-left
 		img[8,n-i-1] = fi  # top-right
 		img[n-i-1,8] = fi  # bottom-left
 
-
 	''' Version Information Area reservation '''
-	img[n-11:n-8,0:6] = vi
-	img[0:6,n-11:n-8] = vi
+	if v>=7:
+		img[n-11:n-8,0:6] = vi
+		img[0:6,n-11:n-8] = vi
 
-	
 	''' Timing Patterns '''
 	# always start and end with a dark module
 
@@ -39,7 +35,6 @@ def draw_qr(v,n,out):
 		else:
 			img[6,i] = img[i,6] = wt
 			
-
 	''' Finder Patterns '''
 	# building the basic structure
 	fp = np.zeros((9,9,3), np.uint8)
@@ -52,7 +47,6 @@ def draw_qr(v,n,out):
 	img[0:8,0:8] = fp[1:,1:] # top-left
 	img[0:8,n-8:n] = fp[1:,:8] # top-right
 	img[n-8:n,0:8] = fp[:8,1:] # bottom-left
-
 
 	''' Alignment Patterns '''
 	# qr-codes having version > 2 need to have
@@ -84,28 +78,23 @@ def draw_qr(v,n,out):
 				print(x,y,': viable, inserting...')
 				img[x-2:x+3,y-2:y+3] = ap
 
-
 	''' Dark Module '''
 	img[[(4 * v) + 9], 8] = bl
-
-
 
 	''' Place the Data Bits '''
 	
 	x=n-1
 	y=n-1
 	
-	print(out)
-	
 	column_height = ((n-1)-8)*2
 
 	for i in range(column_height):
 	
-		if img[y,x].tolist() == gr:
-			if out[i] == '1':
-				img[y,x] = bl
-			else:
-				img[y,x] = wt
+		#if img[y,x].tolist() == gr:
+		if out[i] == '1':
+			img[y,x] = bl
+		else:
+			img[y,x] = wt
 	
 		if i%4 == 0:
 			x = x-1
@@ -122,13 +111,12 @@ def draw_qr(v,n,out):
 	y = y+1
 	
 	for i in range(column_height, column_height*2):
-		if img[y,x].tolist() == gr:
-			if out[i] == '1':
-				img[y,x] = bl
-				print(x,y)
-			else:
-				img[y,x] = wt
-				
+		# if img[y,x].tolist() == gr:
+		if out[i] == '1':
+			img[y,x] = bl
+		else:
+			img[y,x] = wt
+			
 		if i%4 == 0:
 			x = x-1
 		elif (i-1)%4 == 0:
@@ -145,11 +133,11 @@ def draw_qr(v,n,out):
 	
 	for i in range(column_height*2,column_height*3-1):
 	
-		if img[y,x].tolist() == gr:
-			if out[i] == '1':
-				img[y,x] = bl
-			else:
-				img[y,x] = wt
+		# if img[y,x].tolist() == gr:
+		if out[i] == '1':
+			img[y,x] = bl
+		else:
+			img[y,x] = wt
 	
 		if i%4 == 0:
 			x = x-1
@@ -162,12 +150,28 @@ def draw_qr(v,n,out):
 			x = x+1
 			y = y-1
 	
+	''' Data Masking 
+	# toggle the color of the module if it is masked
+	# specification defines eight mask patterns that can be applied
+	# must ONLY be applied to data modules and error correction modules
+	# entire matrix is evaluated based on four evaluation conditions
+	
+	Four Rules:-
+	1. five or more same coloured modules
+	2. 2x2 area of same coloured modules
+	3. patterns simliar to finder patterns
+	4. more than half modules are dark or light
+	
+	'''
+	
+	'''
+	Format and Version info
+	
+	
+	
+	'''
+	
 	''' Show the image '''
 
 	plt.imshow(img)
 	plt.show()
-'''
-110001001000111001111110
-111111010111101011111100
-11111100010101110110111
-'''
